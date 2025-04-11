@@ -1,0 +1,28 @@
+; load the numbers
+LOAD 0 [0xFE]
+AND 0 #0xF
+
+LOAD 1 [0xFE]
+AND 1 #0xF0
+LSR 1 #4
+
+LOAD 2 [0xFE]
+AND 2 #0xF00
+LSR 2 #8
+
+LOAD 3 [0xFE]
+AND 3 #0xF000
+LSR 3 #12
+
+; Do the sum
+STORE 1 [0xFF]
+ADD 0 [0xFF]
+
+STORE 2 [0xFF]
+ADD 0 [0xFF]
+
+STORE 3 [0xFF]
+ADD 0 [0xFF]
+
+; Store result
+STORE 0 [0xFF]
