@@ -1,28 +1,79 @@
-; load the numbers
-LOAD 0 [0xFE]
-AND 0 #0xF
+@VAR_ADDRESS = 0xFF
+:ITEM_00 = 0x00
+:ITEM_01 = 0x01
+:ITEM_02 = 0x02
+:ITEM_03 = 0x03
+:ITEM_04 = 0x04
+:ITEM_05 = 0x05
+:ITEM_06 = 0x06
+:ITEM_07 = 0x07
+:ITEM_08 = 0x08
+:ITEM_09 = 0x09
+:ITEM_0a = 0x0a
+:ITEM_0b = 0x0b
+:ITEM_0c = 0x0c
+:ITEM_0d = 0x0d
+:ITEM_0e = 0x0e
+:ITEM_0f = 0x0f
+:ITEM_10 = 0x10
+:ITEM_11 = 0x11
+:ITEM_12 = 0x12
+:ITEM_13 = 0x13
+:ITEM_14 = 0x14
+:ITEM_15 = 0x15
+:ITEM_16 = 0x16
+:ITEM_17 = 0x17
+:ITEM_18 = 0x18
+:ITEM_19 = 0x19
+:ITEM_1a = 0x1a
+:ITEM_1b = 0x1b
+:ITEM_1c = 0x1c
+:ITEM_1d = 0x1d
+:ITEM_1e = 0x1e
+:ITEM_1f = 0x1f
 
-LOAD 1 [0xFE]
-AND 1 #0xF0
-LSR 1 #4
+:LIST_SORTED = 0
 
-LOAD 2 [0xFE]
-AND 2 #0xF00
-LSR 2 #8
+:ADDR = 0
+:ADDR2 = 0
 
-LOAD 3 [0xFE]
-AND 3 #0xF000
-LSR 3 #12
+; set ADDR and LIST_SORTED
+%SORT_START
+LOAD 0 #1
+STORE 0 :LIST_SORTED
+LOAD 0 #0xE0
+STORE 0 :ADDR
 
-; Do the sum
-STORE 1 [0xFF]
-ADD 0 [0xFF]
+; update ADDR2
+%CYCLE_START
+LOAD 0 :ADDR
+ADD 0 #1
+STORE 0 :ADDR2
 
-STORE 2 [0xFF]
-ADD 0 [0xFF]
+; Compare
+CMP 0 [[:ADDR]]
+BGE %INC_ADDR
 
-STORE 3 [0xFF]
-ADD 0 [0xFF]
+; Switch places
+LOAD 1 [[:ADDR]]
+LOAD 2 [[:ADDR2]]
+STORE 1 :ADDR2
+STORE 2 :ADDR
 
-; Store result
-STORE 0 [0xFF]
+; Not sorted
+STORE 0 :LIST_SORTED
+
+%INC_ADDR
+STORE 0 :ADDR
+
+; Done with current cycle?
+CMP 0 #0xFF
+BNE %CYCLE_START
+
+; Done with sort?
+LOAD 0 #1
+CMP 0 :LIST_SORTED
+BNE %SORT_START 
+
+; Done
+HALT
