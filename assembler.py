@@ -105,11 +105,18 @@ def assemble(instructions: list[str]) -> list[int]:
             compiled += var_addresses[addr]
         elif addr.startswith('%'):
             compiled += 0b00 << ADDR_MOD_OFFSET
-            label_consumer[len(assembled) - 1] = addr
+            label_consumer[len(assembled)] = addr
         else:
             print(instruction)
             raise ValueError(f'Unknown format for instruction on line {row + 1}.')
 
+        assembled.append(compiled)
+
+    def do_the_branch(addr, compiled):
+        compiled += 0b00 << ADDR_MOD_OFFSET
+        address_offset = (-len(assembled) - 1) & 0xFF
+        compiled += address_offset
+        label_consumer[len(assembled)] = addr
         assembled.append(compiled)
 
     for (row, instruction) in enumerate(instructions):
@@ -176,14 +183,14 @@ def assemble(instructions: list[str]) -> list[int]:
             # BRA ADR PC :=PC+1+ADR - (ange 00) -
             case 'BRA', addr:
                 compiled = (6 << OP_CODE_OFFSET) + parse_num(addr)
-                assembled.append(compiled)
+                do_the_branch(addr, compiled)
 
             # BNE ADR PC := PC+1+ADR - (ange 00) -
             # om Z=0, annars
             # PC:= PC+1
             case 'BNE', addr:
                 compiled = (7 << OP_CODE_OFFSET)
-                do_the_addr_mod(addr, compiled)
+                do_the_branch(addr, compiled)
 
             # HALT avbryt exekv. - (ange 00) -
             case 'HALT',:
@@ -198,18 +205,19 @@ def assemble(instructions: list[str]) -> list[int]:
             # BGE, branch if grater or equal, asumes 2s-complemet numbers are compared
             case 'BGE', addr:
                 compiled = (0xA << OP_CODE_OFFSET)
-                do_the_addr_mod(addr, compiled)
+                do_the_branch(addr, compiled)
 
             # BEQ, branch if equal
             case 'BEQ', addr:
                 compiled = (0xB << OP_CODE_OFFSET)
-                do_the_addr_mod(addr, compiled)
+                do_the_branch(addr, compiled)
 
             case _:
                 raise ValueError(f'Error parsing row {row + 1}, didnt match any known instruction')
 
     for address, label in label_consumer.items():
-        assembled[address] += label_to_address[label]
+        inst, addr = assembled[address] & 0xFF00, assembled[address] & 0xFF
+        assembled[address] = inst + ((label_to_address[label] + addr) & 0xFF)
     
     return assembled, var_values, var_start_address
 
@@ -269,29 +277,29 @@ MyM:
 14: 0130180
 15: 0041000
 16: 0380000
-17: 1a00e19
-18: 0000297
-19: 0130180
-1a: 02c0000
-1b: 0840000
-1c: 0118180
-1d: 02c041f
-1e: 0840000
-1f: 0118180
-20: 0000780
-21: 0000000
-22: 0000000
-23: 0000000
-24: 0000000
-25: 0000000
-26: 0000000
-27: 0000000
-28: 0000000
-29: 0000000
-2a: 0000000
-2b: 0000000
-2c: 0000000
-2d: 0000000
+17: 1a00800
+18: 000061a
+19: 0000297
+1a: 0130180
+1b: 02c0000
+1c: 0840000
+1d: 0118180
+1e: 02c0420
+1f: 0840000
+20: 0118180
+21: 0000780
+22: 0380000
+23: 0a80180
+24: 02c0429
+25: 00004a8
+26: 00005aa
+27: 00002a9
+28: 000072a
+29: 0840000
+2a: 0118180
+2b: 02c022d
+2c: 0840000
+2d: 0118180
 2e: 0000000
 2f: 0000000
 30: 0000000
