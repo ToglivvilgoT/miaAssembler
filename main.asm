@@ -57,8 +57,8 @@ BGE %INC_ADDR
 ; Switch places
 LOAD 1 [[:ADDR]]
 LOAD 2 [[:ADDR2]]
-STORE 1 :ADDR2
-STORE 2 :ADDR
+STORE 1 [[:ADDR2]]
+STORE 2 [[:ADDR]]
 
 ; Not sorted
 STORE 0 :LIST_SORTED
