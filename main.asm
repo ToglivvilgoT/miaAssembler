@@ -51,7 +51,8 @@ ADD 0 #1
 STORE 0 :ADDR2
 
 ; Compare
-CMP 0 [[:ADDR]]
+LOAD 1 [[:ADDR2]]
+CMP 1 [[:ADDR]]
 BGE %INC_ADDR
 
 ; Switch places
